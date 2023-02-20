@@ -14,7 +14,7 @@ EpollCore::~EpollCore()
 
 bool EpollCore::Register(EpollObjectRef epollObject, EpollEvent* epollEvent)
 {
-	if (epoll_ctl(_epollHandle, EPOLL_CTL_ADD, epollObject->GetHandle(), epollEvent) < 0)
+	if (epoll_ctl(_epollHandle, EPOLL_CTL_ADD, epollObject->GetHandle(), epollEvent->GetEpoll_Event()) < 0)
 	{
 		cout << strerror(errno) << endl;
 		return false;
@@ -31,8 +31,12 @@ bool EpollCore::Dispatch(uint32 timeoutMs)
 
 	for (int i = 0; i < n; i++)
 	{
-		EpollEvent* epollEvent = static_cast<EpollEvent*>(&_events[i]);
+		epoll_event epoll_Event = _events[i];
+		EpollEvent* epollEvent = static_cast<EpollEvent*>(epoll_Event.data.ptr);
 		EpollObjectRef epollObject = epollEvent->owner;
+
+		/*EpollEvent* epollEvent = static_cast<EpollEvent*>(&_events[i]);
+		EpollObjectRef epollObject = epollEvent->owner;*/
 		epollObject->Dispatch(epollEvent);
 	}
 }

@@ -80,23 +80,25 @@
     <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
     <RemoteOutRelDir>$(RemoteProjectRelDir)/bin/$(Platform)/$(Configuration)</RemoteOutRelDir>
-    <IncludePath>$(SolutionDir)ServerCore\;$(SolutionDir)Libraries\Include\;C:\linux\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ServerCore\;$(SolutionDir)Libraries\Include\;C:\linux\include\;C:\linux\include\python3.9;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Libraries\Libs\;$(LibraryPath)</LibraryPath>
     <RemoteIntRelDir>$(RemoteProjectRelDir)/obj/$(Platform)/$(Configuration)</RemoteIntRelDir>
     <RemoteCCompileToolExe>/opt/rh/devtoolset-8/root/bin/g++</RemoteCCompileToolExe>
     <RemoteCppCompileToolExe>/opt/rh/devtoolset-8/root/bin/g++</RemoteCppCompileToolExe>
     <RemoteLdToolExe>/opt/rh/devtoolset-8/root/bin/g++</RemoteLdToolExe>
+    <ProjectPublicIncludePath>/usr/local/include/python3.9/</ProjectPublicIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
     <RemoteOutRelDir>$(RemoteProjectRelDir)/bin/$(Platform)/$(Configuration)</RemoteOutRelDir>
-    <IncludePath>$(SolutionDir)ServerCore\;$(SolutionDir)Libraries\Include\;C:\linux\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ServerCore\;$(SolutionDir)Libraries\Include\;C:\linux\include\;C:\linux\include\python3.9;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Libraries\Libs\;$(LibraryPath)</LibraryPath>
     <RemoteIntRelDir>$(RemoteProjectRelDir)/obj/$(Platform)/$(Configuration)</RemoteIntRelDir>
     <RemoteCCompileToolExe>/opt/rh/devtoolset-8/root/bin/g++</RemoteCCompileToolExe>
     <RemoteCppCompileToolExe>/opt/rh/devtoolset-8/root/bin/g++</RemoteCppCompileToolExe>
     <RemoteLdToolExe>/opt/rh/devtoolset-8/root/bin/g++</RemoteLdToolExe>
+    <ProjectPublicIncludePath>/usr/local/include/python3.9/</ProjectPublicIncludePath>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="ClientPacketHandler.cpp" />
@@ -127,11 +129,11 @@
       <CppLanguageStandard>c++17</CppLanguageStandard>
     </ClCompile>
     <Link>
-      <SharedLibrarySearchPath>%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+      <SharedLibrarySearchPath>/usr/local/lib/python3.9%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
       <UnresolvedSymbolReferences>true</UnresolvedSymbolReferences>
-      <AdditionalLibraryDirectories>/root/projects/$(SolutionName)/Libraries/Libs/$(Platform)/$(Configuration);/usr/local/;/usr/local/lib/python3.9/config-3.9-x86_64-linux-gnu;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>/root/projects/$(SolutionName)/Libraries/Libs/$(Platform)/$(Configuration);/usr/local/lib;/usr/local/lib/python3.9/config-3.9-x86_64-linux-gnu;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <LibraryDependencies>ServerCore</LibraryDependencies>
-      <AdditionalDependencies>-pthread -ldl -lutil -lpython3.9;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>-pthread -ldl -lutil -lm -lpython3.9;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,11 +141,11 @@
       <CppLanguageStandard>c++17</CppLanguageStandard>
     </ClCompile>
     <Link>
-      <SharedLibrarySearchPath>%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+      <SharedLibrarySearchPath>/usr/local/lib/python3.9%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
       <UnresolvedSymbolReferences>true</UnresolvedSymbolReferences>
-      <AdditionalLibraryDirectories>/root/projects/$(SolutionName)/Libraries/Libs/$(Platform)/$(Configuration);/usr/local/;/usr/local/lib/python3.9/config-3.9-x86_64-linux-gnu;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>/root/projects/$(SolutionName)/Libraries/Libs/$(Platform)/$(Configuration);/usr/local/lib;/usr/local/lib/python3.9/config-3.9-x86_64-linux-gnu;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <LibraryDependencies>ServerCore</LibraryDependencies>
-      <AdditionalDependencies>-pthread -ldl -lutil -lpython3.9;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>-pthread -ldl -lutil -lm -lpython3.9;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

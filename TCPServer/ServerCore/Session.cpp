@@ -62,6 +62,7 @@ int Session::GetHandle()
 
 void Session::Dispatch(EpollEvent* epollEvent)
 {
+	cout << "Session::Dispatch" << endl;
 	if (epollEvent->eventType == EventType::Recv)
 		ProcessRecv();
 	else if (epollEvent->eventType == EventType::Disconnect)
@@ -82,7 +83,6 @@ bool Session::RegisterConnect()
 	if (SocketUtils::BindAnyAddress(_socket, 0/*Any address remains*/) == false)
 		return false;
 
-	_connectEvent.Init();
 	_connectEvent.owner = shared_from_this(); // ADD_REF
 
 	sockaddr_in sockAddr = GetService()->GetNetAddress().GetSockAddr();
@@ -92,6 +92,7 @@ bool Session::RegisterConnect()
 		return false;
 	}
 	
+	ProcessConnect();
 
 	return true;
 }
@@ -99,7 +100,7 @@ bool Session::RegisterConnect()
 bool Session::RegisterDisconnect()
 {
 
-	if (epoll_ctl(GetService()->GetEpollCore()->GetHandle(), EPOLL_CTL_DEL, _socket, &_recvEvent) < 0)
+	if (epoll_ctl(GetService()->GetEpollCore()->GetHandle(), EPOLL_CTL_DEL, _socket, _recvEvent.GetEpoll_Event()) < 0)
 		return false;
 
 	ProcessDisconnect();
@@ -112,17 +113,17 @@ void Session::RegisterRecv()
 	if (IsConnected() == false)
 		return;
 
-
-	_recvEvent.Init();
 	_recvEvent.owner = shared_from_this(); // ADD_REF
 
 	if (_registeredOnEpoll == false)
 	{
 		_registeredOnEpoll.store(true);
-		if (epoll_ctl(GetService()->GetEpollCore()->GetHandle(), EPOLL_CTL_ADD, _socket, &_recvEvent) < 0)
+		if (epoll_ctl(GetService()->GetEpollCore()->GetHandle(), EPOLL_CTL_ADD, _socket, _recvEvent.GetEpoll_Event()) < 0)
 			HandleError(errno);
+		cout << "RegisterRecv succeed" << endl;
 	}
 
+	
 }
 
 void Session::RegisterSend()
@@ -130,7 +131,6 @@ void Session::RegisterSend()
 	if (IsConnected() == false)
 		return;
 
-	_sendEvent.Init();
 	_sendEvent.owner = shared_from_this(); // ADD_REF
 
 	// Register data to send on sendEvent
@@ -151,18 +151,24 @@ void Session::RegisterSend()
 	}
 
 	// Scatter-Gather (흩어져 있는 데이터들을 모아서 한 방에 보낸다)
-	Vector<BYTE*> bufs;
+	Vector<BYTE> bufs;
 	bufs.reserve(_sendEvent.sendBuffers.size());
 
 	uint32 totalBytes = 0;
 
 	for (SendBufferRef sendBuffer : _sendEvent.sendBuffers)
 	{
-		BYTE* bufOfSendBuf = sendBuffer->Buffer();
+		BYTE* bufOfSendBuf = sendBuffer->Buffer(); ////////////////////
 		totalBytes += sendBuffer->WriteSize();
-		bufs.push_back(sendBuffer->Buffer());
+
+		for (int i = 0; i < sendBuffer->WriteSize(); i++)
+		{
+			bufs.push_back(bufOfSendBuf[i]);
+		}
+		//bufs.push_back(bufOfSendBuf);
 	}
 
+	//Vector<BYTE> finalBufs(totalBytes);
 
 	int32 numOfBytes = send(_socket, bufs.data(), totalBytes, 0);
 	ProcessSend(numOfBytes);
@@ -217,6 +223,8 @@ void Session::ProcessRecv()
 			Disconnect("Recv 0");
 			return;
 		}
+
+		_recvBuffer.OnWrite(numOfBytes);
 
 		int32 dataSize = _recvBuffer.DataSize();
 		int32 processLen = OnRecv(_recvBuffer.ReadPos(), dataSize); // Should be redefined in contents side

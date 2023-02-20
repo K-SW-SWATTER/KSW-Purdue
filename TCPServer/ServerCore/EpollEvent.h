@@ -3,26 +3,32 @@
 
 typedef unsigned int		SOCKET;
 
-enum class EventType : uint8
+enum class EventType : uint32
 {
 	Connect,
 	Disconnect,
+	Send,
 	Accept,
-	//PreRecv,
 	Recv,
-	Send
+	//PreRecv,
+	
 };
 
-class EpollEvent : public epoll_event
+class EpollEvent
 {
 public:
+	EpollEvent();
 	EpollEvent(EventType type);
 
 	void			Init();
+	epoll_event* GetEpoll_Event() { return &_epollEvent; }
 
 public:
 	EventType eventType;
 	EpollObjectRef owner;
+
+private:
+	epoll_event _epollEvent;
 };
 
 class ConnectEvent : public EpollEvent

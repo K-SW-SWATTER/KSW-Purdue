@@ -2,7 +2,9 @@ package com.example.acousticuavdetection
 
 import android.Manifest
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -24,9 +26,7 @@ import com.example.acousticuavdetection.feature.FeatureExtraction
 import org.merlyn.kotlinspeechfeatures.MathUtils
 import org.merlyn.kotlinspeechfeatures.SpeechFeatures
 import java.io.File
-import java.time.LocalTime
 import kotlin.collections.ArrayList
-import kotlin.io.path.Path
 
 
 class MainActivity : AppCompatActivity() {
@@ -64,21 +64,29 @@ class MainActivity : AppCompatActivity() {
                 binding_main.tabLayout.getTabAt(1)?.setText("server")
                 binding_main.tabLayout.getTabAt(0)?.setIcon(R.drawable.baseline_speaker_phone_24)
                 binding_main.tabLayout.getTabAt(1)?.setIcon(R.drawable.baseline_device_hub_24)
+        if (!(File("${getExternalFilesDir(Environment.DIRECTORY_MUSIC)}/uav_audio").exists())){
+            File("${getExternalFilesDir(Environment.DIRECTORY_MUSIC)}/uav_audio").mkdir()
+        }
+        if (!(File("${getExternalFilesDir(Environment.DIRECTORY_MUSIC)}/audio_feature").exists())){
+            File("${getExternalFilesDir(Environment.DIRECTORY_MUSIC)}/audio_feature").mkdir()
+        }
     }
 
     fun fabClick(view: View) {
         if (!mIsRecording) {
+            startRecording()
+            mIsRecording = !mIsRecording
             runOnUiThread(
                 Runnable {
-                    startRecording()
-                    mIsRecording = !mIsRecording
+
                 }
             )
         } else {
+            stopRecording()
+            mIsRecording = !mIsRecording
             runOnUiThread(
                 Runnable {
-                    stopRecording()
-                    mIsRecording = !mIsRecording
+
                 }
             )
         }
@@ -86,7 +94,6 @@ class MainActivity : AppCompatActivity() {
 
     fun fab2Click (view: View) {
         Toast.makeText(this, "MFCC called. Check logcat.", Toast.LENGTH_LONG).show()
-        viewModel.performMfcc()
     }
     private fun checkNeededPermissions() {
         println("Requesting permission")
@@ -115,31 +122,12 @@ class MainActivity : AppCompatActivity() {
     */
 
     private fun startRecording() {
-        var fileIndex = 0 //index of file
-        var basePath = "${getExternalFilesDir(Environment.DIRECTORY_MUSIC)}/uav_audio"
-        while(File(basePath + String.format(fileIndex.toString(),"%02d")).exists()) {
-            File(basePath + String.format(fileIndex.toString(),"%02d")).delete()
-            fileIndex++
-        }
-
-        fileIndex = 0
-        var recording = true //creates infinite loop
-        mRecorder = AudioRecorder()
-        mRecorder?.setOutputFile(basePath + String.format(fileIndex.toString(),"%02d"))
+        mRecorder = AudioRecorder(context = this)
         mRecorder?.startRecording()
-        mIsRecording = true
-        do {
-            Thread{
-                fileIndex++
-                Thread.sleep(5000)
-                mRecorder?.setOutputFile(basePath + String.format(fileIndex.toString(),"%02d"))
-            }
-        } while(mIsRecording)
-
         Toast.makeText(this, "Recording started", Toast.LENGTH_SHORT).show()
-        Toast.makeText(this, basePath + String.format(fileIndex.toString(),"%02d"), Toast.LENGTH_SHORT).show()
     }
     private fun stopRecording() {
+        mRecorder?.stopTimer()
         mRecorder?.stopRecording()
         mRecorder = null
         Toast.makeText(this, "Recording stopped", Toast.LENGTH_SHORT).show()
@@ -158,6 +146,15 @@ class MainActivity : AppCompatActivity() {
             binding_main.viewPager.removeView(`object` as View)
         }
 
+    }
+    override fun onBackPressed() {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+            // Workaround for Android Q memory leak issue in IRequestFinishCallback$Stub.
+            // (https://issuetracker.google.com/issues/139738913)
+            finishAfterTransition()
+        } else {
+            super.onBackPressed()
+        }
     }
 }
 

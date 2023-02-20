@@ -22,7 +22,7 @@ using CondVar = std::condition_variable;
 using UniqueLock = std::unique_lock<std::mutex>;
 using LockGuard = std::lock_guard<std::mutex>;
 
-using WAVData = std::vector<float>;
+using FeatureData = std::vector<float>;
 
 // shared_ptr
 

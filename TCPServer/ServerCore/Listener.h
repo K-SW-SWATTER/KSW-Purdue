@@ -35,6 +35,6 @@ protected:
 	SOCKET _socket;
 	Vector<AcceptEvent*> _acceptEvents;
 	ServerServiceRef _service;
-	unordered_map<AcceptEvent*, SOCKET> _SocketMap;
+	unordered_map<EpollEvent*, SOCKET> _SocketMap;
 };
 

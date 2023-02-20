@@ -17,7 +17,7 @@ public:
 
 	virtual void OnConnected() override
 	{
-		//cout << "Connected To Server" << endl;
+		cout << "Connected To Server" << endl;
 	}
 
 	virtual void OnRecvPacket(BYTE* buffer, int32 len) override
@@ -29,7 +29,7 @@ public:
 
 	virtual void OnSend(int32 len) override
 	{
-		//cout << "OnSend Len = " << len << endl;
+		cout << "OnSend Len = " << len << endl;
 	}
 
 	virtual void OnDisconnected() override
@@ -40,7 +40,8 @@ public:
 
 int main()
 {
-	this_thread::sleep_for(chrono::seconds(1));
+	
+	//this_thread::sleep_for(chrono::seconds(1));
 
 	ClientServiceRef service = MakeShared<ClientService>(
 		NetAddress("127.0.0.1", 631),
@@ -50,7 +51,7 @@ int main()
 
 	ASSERT_CRASH(service->Start());
 
-	for (int32 i = 0; i < 2; i++)
+	/*for (int32 i = 0; i < 1; i++)
 	{
 		GThreadManager->Launch([=]()
 			{
@@ -59,7 +60,7 @@ int main()
 					service->GetEpollCore()->Dispatch();
 				}
 			});
-	}
+	}*/
 
 	PKT_C_AUDIO_DATA_WRITE pktWriter(C_AUDIO_DATA, 12);
 
@@ -68,7 +69,7 @@ int main()
 	while (true)
 	{
 		service->Broadcast(sendBuffer);
-		this_thread::sleep_for(chrono::seconds(1));
+		this_thread::sleep_for(chrono::seconds(10));
 	}
 
 	GThreadManager->Join();

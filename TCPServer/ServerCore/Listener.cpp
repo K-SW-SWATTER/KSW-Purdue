@@ -51,12 +51,11 @@ bool Listener::StartAccept(ServerServiceRef service)
 		return false;
 
 
-	const int32 acceptCount = _service->GetMaxSessionCount();
+	const int32 acceptCount = 1;
 	for (int32 i = 0; i < acceptCount; i++)
 	{
-		AcceptEvent* acceptEvent = new AcceptEvent();
+		AcceptEvent* acceptEvent = xnew<AcceptEvent>();
 		acceptEvent->owner = shared_from_this();
-
 		//epoll_event* acceptEvent = new epoll_event();
 		_acceptEvents.push_back(acceptEvent);
 		RegisterAccept(acceptEvent);
@@ -78,48 +77,48 @@ int Listener::GetHandle()
 void Listener::Dispatch(EpollEvent* epollEvent)
 {
 	ASSERT_CRASH(epollEvent->eventType == EventType::Accept);
-	
-	ProcessAccept(static_cast<AcceptEvent*>(epollEvent));
+	AcceptEvent* acceptEvent = static_cast<AcceptEvent*>(epollEvent);
+	cout << "Listener's Dispatch" << endl;
+	ProcessAccept(acceptEvent);
 }
 
 void Listener::RegisterAccept(AcceptEvent* acceptEvent)
 {
 	SessionRef session = _service->CreateSession();
 
-	acceptEvent->Init();
 	acceptEvent->session = session;
 
 
 	if (_registeredOnEpoll == false)
 	{
 		_registeredOnEpoll.store(true);
-		_SocketMap[acceptEvent] = _socket;
-		if (epoll_ctl(_service->GetEpollCore()->GetHandle(), EPOLL_CTL_ADD, _socket, acceptEvent) < 0)
+		if (epoll_ctl(_service->GetEpollCore()->GetHandle(), EPOLL_CTL_ADD, _socket, acceptEvent->GetEpoll_Event()) < 0)
 		{
 			cout << strerror(errno) << endl;
 		}
 	}
 	else
 	{
-		if (_SocketMap.find(acceptEvent) == _SocketMap.end())
-		{
-			SOCKET newSocket = fcntl(_socket, F_DUPFD); // Duplicate the socket fd
-			if (newSocket < 0)
-			{
-				cout << newSocket << "is less than zero" << endl;
-				cout << strerror(errno) << endl;
-				return;
-			}
-			else
-			{
-				_SocketMap[acceptEvent] = newSocket;
-				if (epoll_ctl(_service->GetEpollCore()->GetHandle(), EPOLL_CTL_ADD, newSocket, acceptEvent) < 0)
-				{
-					cout << strerror(errno) << endl;
-				}
-			}
-			
-		}
+		
+		//if (_SocketMap.find(acceptEvent) == _SocketMap.end())
+		//{
+		//	SOCKET newSocket = fcntl(_socket, F_DUPFD); // Duplicate the socket fd
+		//	if (newSocket < 0)
+		//	{
+		//		cout << newSocket << "is less than zero" << endl;
+		//		cout << strerror(errno) << endl;
+		//		return;
+		//	}
+		//	else
+		//	{
+		//		_SocketMap[acceptEvent] = newSocket;
+		//		if (epoll_ctl(_service->GetEpollCore()->GetHandle(), EPOLL_CTL_ADD, newSocket, acceptEvent->GetEpoll_Event()) < 0)
+		//		{
+		//			cout << strerror(errno) << endl;
+		//		}
+		//	}
+		//	
+		//}
 	}
 	
 	
@@ -127,13 +126,15 @@ void Listener::RegisterAccept(AcceptEvent* acceptEvent)
 
 void Listener::ProcessAccept(AcceptEvent* acceptEvent)
 {
+	cout << "Listener's ProcessAccept" << endl;
+
 	SessionRef session = acceptEvent->session;
 
-	sockaddr_in inSockAddress;
-	socklen_t sizeOfSockAddr;
+	sockaddr_in inSockAddress; // Client's address
+	socklen_t sizeOfSockAddr; // To show length of address
 	sizeOfSockAddr = sizeof(inSockAddress);
 
-	SOCKET acceptSocket = accept(_SocketMap[acceptEvent], (sockaddr*) &inSockAddress, &sizeOfSockAddr);
+	SOCKET acceptSocket = accept(_socket, (sockaddr*) &inSockAddress, &sizeOfSockAddr);
 	ASSERT_CRASH(IS_VALID_SOCKET(SocketUtils::MakeSocketNonBlocking(acceptSocket)));
 
 	//_SocketMap.erase(acceptEvent);

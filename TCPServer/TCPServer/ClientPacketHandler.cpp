@@ -52,6 +52,7 @@ bool ClientPacketHandler::Handle_C_LOGIN(PacketSessionRef& session, BYTE* buffer
 
 bool ClientPacketHandler::Handle_C_AUDIO_DATA(PacketSessionRef & session, BYTE * buffer, int32 len)
 {
+	
 	// TODO
 	BufferReader br(buffer, len);
 
@@ -60,6 +61,7 @@ bool ClientPacketHandler::Handle_C_AUDIO_DATA(PacketSessionRef & session, BYTE *
 	if (pkt->Validate() == false)
 		return false;
 
+	cout << "Handle_C_Audio" << endl;
 	return true;
 }
 

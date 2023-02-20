@@ -425,9 +425,12 @@ ipch
 *sdf
 
 ##ignore file
-Object Detection/Dataset
-Object Detection/*.pkl
-Object Detection/__pycache__
+Object_Detection/Dataset
+Object_Detection/save/pb
+Object_Detection/*.pkl
+Object_Detection/__pycache__
+Object_Detection/server/server_v1.py
+Object_Detection/functions/function_test.py
 
 ### macOS ###
 # General
