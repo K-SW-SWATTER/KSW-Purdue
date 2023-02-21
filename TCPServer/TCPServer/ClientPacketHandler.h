@@ -2,9 +2,12 @@
 #include "BufferReader.h"
 #include "BufferWriter.h"
 #include "PacketProtocol.h"
+#include "MLManager.h"
 
 using PacketHandlerFunc = std::function<bool(PacketSessionRef&, BYTE*, int32)>;
 extern PacketHandlerFunc GPacketHandler[UINT16_MAX];
+
+extern MLManager GMLManager;
 
 enum PacketNum : unsigned short
 {

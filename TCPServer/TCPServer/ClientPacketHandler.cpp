@@ -9,9 +9,10 @@ PacketHandlerFunc GPacketHandler[UINT16_MAX];
 
 struct PKT_C_AUDIO_DATA
 {
-	uint16 packetSize; // 공용 헤더
-	uint16 packetId; // 공용 헤더
-	bool result;
+	uint16 packetSize; // 공용 헤더, 패킷의 유효성 검증을 위한 것
+	uint16 packetId; // 공용 헤더, 받은 패킷이 어떤 종류의 패킷인지 구분하기 위한 것
+	uint16 featureOffset; // feature 배열의 시작 주소
+	uint16 featureCount = 40; // 40개의 데이터를 보낼 것이므로 40
 
 	bool Validate()
 	{
@@ -20,6 +21,13 @@ struct PKT_C_AUDIO_DATA
 		if (packetSize < size)
 			return false;
 
+		if (featureOffset + featureCount * sizeof(float) > packetSize)
+			return false;
+
+		size += featureCount * sizeof(float);
+
+		if (size != packetSize)
+			return false;
 		return true;
 	}
 };
@@ -60,6 +68,8 @@ bool ClientPacketHandler::Handle_C_AUDIO_DATA(PacketSessionRef & session, BYTE *
 
 	if (pkt->Validate() == false)
 		return false;
+
+	GMLManager.RunModel((float*)&buffer[pkt->featureOffset]); // from featureOffset, byte -> float
 
 	cout << "Handle_C_Audio" << endl;
 	return true;
